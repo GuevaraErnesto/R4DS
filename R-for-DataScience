@@ -1,0 +1,1003 @@
+
+### TIDYVERSE
+
+### Introducción a GGPLOT2
+
+library(tidyverse)
+
+View(mpg)
+
+######### ######### ######### MPG ######### ######### ######### 
+
+######   VARIABLES   #########  
+### MPG
+### manufacturer
+### model
+### displ: tamaño del motor 
+### year
+### cyl: cilindros
+### trans: tipo de transmisión
+### drv: tipo de tracción  ###  4:4x4; f:frontal; r:trasera.
+### cty: millas por galón en la ciudad
+### hwy: millas por galón en la carretera
+### fl: tipo de combustible 
+### class: tipo de vehículo
+
+######### Gráfica de nube de puntos
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y=hwy)) 
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y=cty))
+
+######### Clasificar por color
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y=hwy, color = class))
+
+######### Clasificar por transparencia
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y=hwy, alpha = class))
+
+######### Clasificar por forma
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y=hwy, shape = class))
+
+######### Clasificar por tamaño
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y=hwy, size = class))
+
+######### FACETS
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~class, nrow = 2)
+  
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(class~.)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(class~year)
+
+######### Otras geometrías
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_smooth() +
+  geom_point(alpha = 0.5)
+ 
+######### Colorear respecto a criterios
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y=hwy, color = cty < 16.86))
+
+######### ######### ######### DIAMONDS ######### ######### ######### 
+
+#### Geom_bar <- una variable discreta (categoría)
+
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
+
+demo <- tribble(
+  ~cut, ~freqs, 
+  "Fair", 1610, 
+  "Good", 4906,
+  "Very good", 12082,
+  "Premium", 13791,
+  "Ideal", 21551
+)
+
+######### El stat de geom_bar es count (conteo). Te ordena de mayor a menor.
+
+ggplot(data = demo) +
+  geom_bar(mapping = aes(x = cut))
+
+######### El stat de arriba no sirve porque sólo detecta un Fair, Good, Very Good, etc.
+######### Ordena alfabéticamente.
+
+ggplot(data = demo) +
+  geom_bar(mapping = aes(x = cut, y = freqs), stat = "identity") + 
+  theme(axis.text.x = element_text(angle = 90))
+
+### Stat_summary es lo mismo que la geometría pointrange.
+
+ggplot(data = diamonds) + 
+  stat_summary(mapping = aes(x = cut, y = price),
+               fun.ymin = min, fun.ymax = max, fun.y = mean)
+
+### ¿Qué porcentaje de cada grupo conforman tu base de datos? ###
+
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, y = ..prop.., group = 100), fill = "darkred") +
+  labs(x = "Corte", y = "Porcentaje")
+
+### Levels es para ver las categorías.
+
+levels(diamonds$cut) <- c("Regular", "Bueno", "Muy bueno", "Premium", "Ideal")
+
+### Colorea las barras de acuerdo a los datos.
+
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity)) + 
+  theme_minimal() + 
+  labs(title = "Diamantes", x = "Corte", y = "Conteo")
+
+### ### ### Parámetro: position. ### ### ###  
+
+### Parámetro: dodge
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge") + 
+  theme_minimal() + 
+  labs(title = "Diamantes", x = "Corte", y = "Conteo")
+
+### Parámetro: identity. Todos los colores inician desde cero.
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "identity") + 
+  theme_minimal() + 
+  labs(title = "Diamantes", x = "Corte", y = "Conteo")
+
+### Parámetro: fill. Sirve para comparar proporciones
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "fill") + 
+  theme_minimal() + 
+  labs(title = "Diamantes", x = "Corte", y = "Conteo")
+
+### ### ### En Scatterplot (geom_point) ### ### ### 
+### Los valores se redondean, por lo cual muchos puntos se sobreponen. 
+### Este problema se conoce como overlapping.
+### Jitter ayuda a solucionar el problema.
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_jitter(color = "red") + 
+  geom_point(color = "blue")
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(position = "jitter") + 
+  geom_point(color = "blue") +
+  geom_smooth()
+
+### ### ### Coordenadas ### ### ###
+### coord_flip: cambia los papeles de "x" e "y"
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() +
+  coord_flip()
+
+ggplot(data = diamonds) + 
+  stat_summary(mapping = aes(x = cut, y = price),
+               fun.ymin = min, fun.ymax = max, fun.y = mean) + 
+  coord_flip()
+
+### coord_polar: coordenadas circulares
+
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = cut), show.legend = F, width = 1)+
+  theme_light() +
+  coord_polar() + 
+  labs(title = "Diamonds are forever", x = "Corte", y = "Conteo") 
+
+### Mapas
+
+install.packages("maps")
+library(maps)
+
+mundo <- map_data("world")
+
+ggplot(data = mundo, aes(long,lat, group = group)) +
+  geom_polygon(fill = "red", color = "darkred") + 
+  coord_quickmap()
+
+ggplot(data = italia, aes(long,lat, group = group)) +
+  geom_polygon(fill = "red", color = "darkred") + 
+  coord_quickmap()
+
+### ### ### Package: dplyr.
+
+library(nycflights13)
+
+View(nycflights13::weather)
+
+### Un TIBBLE es un dataframe arreglado para tidyverse.
+# int números enteros
+# dbl números con punto decimal
+# chr caracteres
+# dttm fechas con horas, minutos y segundos
+# lgl lógicos
+# fct factores (variables categóricas)
+# date fecha sin horas, de tipo día, mes y año
+
+### Aprenderemos el uso de las funciones:
+# filter para filtrar observaciones de valores en concreto. 
+# arrange para reordenar filas de un tibble.
+# select para seleccionar variables por su nombre.
+# mutate para crear nuevas variables con funciones a partir de las variables ya existentes.
+# summarise colapsa varios valores para dar un resumen estadístico de los mismos.
+# group_by opera la función a la que acompaña grupo a grupo.
+
+### FILTER()
+
+summary(as.factor(flights$month))
+
+summary(as.factor(flights$day))
+
+summary(flights[flights$year == "2013",])
+
+summary(as.factor(flights$year))
+
+summary(as.factor(flights$day))
+
+View(vuelos_prueba <- data.frame(fecha=paste(flights$month, flights$day, sep = "_"), flights))
+
+summary(as.factor(vuelos_prueba$fecha))
+
+View(vuelos_prueba[vuelos_prueba$fecha == "9_3",])
+
+vuelos_cumple_ernesto <- vuelos_prueba[vuelos_prueba$fecha == "9_3",]
+
+sep_3 <- flights %>%
+  filter(month == "9" & day == "3")
+  
+# La sintaxis VAR %in% c(a,b,c), equivale a VAR == a | VAR == b | VAR == c
+
+View(filter(flights, month %in% c(1,2,3,4,5,6)))
+
+# El signo de exclamación por si quieres lo contrario.
+
+View(filter(flights, !(month %in% c(1,2,3,4,5,6))))
+    
+filter(flights, dep_delay == 0, arr_delay == 0)
+
+relacion_retraso_aerolinea <- ggplot(data = flights) + 
+  geom_point(mapping = aes(x = dep_delay, y = arr_delay, color = carrier)) +
+  facet_wrap(~carrier, nrow = 3)
+
+
+### ARRANGE() <- Ordenamientos
+## Ordenar de menor a mayor (default)
+
+library(tidyverse)
+library(nycflights13)
+
+arrange(flights, dep_delay)
+
+## Ordenar de mayor a menor
+
+arrange(flights, desc(dep_delay))
+
+## Varios parámetros <- criterio de desempate
+
+arrange(flights, dep_delay, month)
+
+## tabla[order(tabla$variable),] equivale a arrange(tabla, variable)
+
+
+### SELECT() <- Selecciones.
+
+select(flights, dep_delay, arr_delay) # Selecciona columnas
+select(flights, dep_delay:arr_delay) # Desde dep_delay hasta arr_delay
+select(flights, -(year:day)) # Para quitar columnas
+
+select(flights, starts_with("dep")) # Columnas que comiencen con ciertos caracteres
+select(flights, ends_with("delay")) # Columnas que terminen con ciertos caracteres
+select(flights, contains("dep")) # Columnas que contengan ciertos caracteres
+
+select(flights, contains("dep"), everything()) # Te devuelve las columnas seleccionadas y después lo demás
+
+select(flights, num_range("x", 1:5)) # Selecciona las columnas x1, x2, x3, x4, x5 
+
+### Para saber el número de opciones únicas dentro de una columna: length(unique(df$columna))
+ 
+### RENAME() <- renombrar columnas.
+
+rename(flights, deptime = dep_time) # Primero el nombre que quieres y después el actual.
+
+
+### MUTATE() <- creación de columnas.
+
+nuevo_flights <- select(flights, year:day, ends_with("delay"), distance, air_time)
+
+mutate(nuevo_flights, time_gain = arr_delay - dep_delay, speed = distance / (air_time / 60)) 
+# Nueva columna + la operación que la crea
+
+
+### TRANSMUTE() <- crea columnas y elimina el resto.
+transmute(nuevo_flights, time_gain = arr_delay - dep_delay, speed = distance / (air_time / 60)) 
+
+
+### Offsets: lead(), lag()
+## lead() recorre los elementos hacia la izquierda. Sustituye el último elemento por un NA.
+## lag() recorre los elementos hacia la derecha. Sustituye el primer elemento por un NA.
+
+(df1 <- data_frame("x" = c(1,5,2,65,6,2,5)))
+
+lag(lag(lag(df1)))
+lead(df1)
+
+### Funciones acumulativas: cumsum(), cummin(), cummax(), cumprod(). En dplyr existe cummean().
+ 
+cumsum(df) # sumas acumuladas
+cumprod(df) # factoriales 
+cummin(df) # se fija en el número más chico del vector
+cummax(df) # el máximo entre 1 y 1 es 1, entre 1 y 2 es 2, entre 2 y 3 es 3 ...
+cummean(df) # el promedio entre 1 y 1 es 1, entre 1 y 2 es 1.5, entre 1, 2 y 3 es 2 ...
+
+### Rankings. Rankea los números de acuerdo a su valor 
+
+ejemplo <- c(7,1,2,5,3,3,8,NA,3,4,-2)
+min_rank(ejemplo)
+
+### SUMMARISE() <- Resúmenes estadísticos. En general no es muy útil, su fuerza se ve cuando se hacen
+### agrupaciones. Al agrupar te da la estadística de acuerdo al grupo que creaste.
+
+summarise(flights, retraso = mean(dep_delay, na.rm = T))
+
+grupo_mes <- group_by(flights, year, month)  # Agrupa por meses.
+
+summarise(grupo_mes, retraso = mean(dep_delay, na.rm = T)) # Podemos llegar al mismo resultado usando tapply.
+
+tapply(flights$dep_delay, flights$month, function(x){mean(x, na.rm = T)})
+
+# Aerolíneas rankeadas de acuerdo al promedio de retrasos
+
+arrange(mutate(summarise(group_by(flights,carrier), 
+                 retraso_promedio = mean(dep_delay, na.rm = T),
+                 retraso_mediana = median(dep_delay, na.rm = T)), 
+                 rank_promedio = min_rank(retraso_promedio),
+                 rank_mediana = min_rank(retraso_mediana)), rank_promedio)
+
+retraso <- flights %>%
+  
+  group_by(carrier) %>%
+  
+  summarise(retraso_promedio = mean(dep_delay, na.rm = T),
+            retraso_mediana = median(dep_delay, na.rm = T)) %>%
+  
+  mutate(rank_promedio = min_rank(retraso_promedio),
+         rank_mediana = min_rank(retraso_mediana)) %>%
+  
+  arrange(rank_promedio, rank_mediana) %>%
+  
+  ggplot(mapping = aes(x = carrier, y = retraso_promedio)) + 
+  geom_point()
+
+#### La función count() cuenta aquello que hayas agrupado.
+
+por_destino <- flights %>%
+  group_by(dest) %>%
+  summarise(count = n(),
+            dist = mean(distance, na.rm = T),
+            delay = mean(arr_delay, na.rm = T)) %>%
+  filter(count > 100, dest != "HNL") %>%
+  ggplot(mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+
+no_cancel <- flights %>%
+  filter(!is.na(dep_delay) , !is.na(arr_delay)) %>%
+  group_by(tailnum, carrier) %>%
+  summarise(delay = mean(arr_delay),
+          count = n()) %>%
+  filter(count > 30)
+
+ggplot(data = no_cancel) + 
+  geom_point(mapping = aes(x=count, y=delay, color = carrier), alpha = 0.5) +
+  facet_wrap(~carrier, nrow = 3)
+
+library(datos)
+
+select(mpg, nombre_)
+
+### Crear un tibble a partir de un dataframe:
+### Si A es un dataframe y lo quieres convertir a tibble se usa as_tibble(A)
+
+iris_tibble <- as_tibble(iris) 
+
+### Crear un tibble a partir de vectores individuales:
+
+(tibble(x = 1:5, y = pi, z = y * x ^ 2)) 
+
+(data.frame(x = 1:5, y = pi, z = y * x ^ 2))
+
+### El tibble, a diferencia del dataframe, también arroja la clase del dato.
+
+ggplot(data = iris) + 
+  geom_point(mapping = aes(x = Sepal.Width, y = Petal.Length, color = Species))
+
+names(iris)
+
+### Con la función tribble, creas la tabla de forma manual.
+
+A1 <- tribble( 
+  ~x, ~y, ~z,
+# ---|---|---
+  "a", 1, 2.3,
+  "b", 2, 4.6
+  )
+
+####### Importación de datos con readr ####### 
+
+### read_tipo(dirección//nombre)
+
+## Lectura de ficheros CSV = read_csv
+## R básico utiliza = read.csv
+## La diferencia es la velocidad. read_csv es 10 veces más rápido.
+
+## Lectura de ficheros con separador ; = read_csv2
+
+## Lectura de ficherons con separador tabulado = read_tsv
+
+## Lectura de ficheros con separador general = 
+## read_delim(dirección//nombre, delim = "%")
+
+####### Exportación de datos ####### 
+
+## write.csv(mpg, file = "dirección//nombre_archivo.csv")
+## Usar row.names = FALSE para que no genere los nombres de las filas. (X1 = c(1,2,3,4..))
+
+
+#### Funciones PARSE_
+
+View(
+parse_logical(c("TRUE", "FALSE", "NA", "TRUE", "hola"))) 
+# Toma el vector de caracteres y lo procesa como lógico
+
+View(
+parse_integer(c("33","5","90", "hola", "3.14")))
+# Toma el vector de caracteres y lo procesa como números entero
+
+# parse_datetime, parse_date, parse_time
+
+# La diferencia entre parse_double y parse_number es que parse_number olvida todo lo que no sea número
+
+parse_number("$1.000,99", locale = locale(grouping_mark = ".", decimal_mark = ","))
+
+## Haven lee archivos tipo SPSS, SAS y Stata
+## readxl para .xsl y .xlsx
+## DBI (RMySQL, RSQLite, RPostgrate)
+## jasonlite para tipo json
+## xml2 para XML 
+## 
+
+View(tabla1)
+View(tabla2)
+View(tabla3)
+View(tabla4a)
+View(tabla4b)
+
+### Una tabla está ordenada cuando se cumplen las tres condiciones siguientes:
+### 1) Cada variable debe tener su propia columna.
+### 2) Cada observación debe tener su propia fila. 
+### 3) Cada valor debe tener su propia celda. 
+
+tabla1 %>%
+  mutate(rate = casos / poblacion * 10000)
+
+tabla1 %>%
+  group_by(anio) %>%
+  summarise(count = n())
+
+tabla1 %>%
+  count(anio, wt = casos)
+
+ggplot(data = tabla1, mapping = aes(x = anio, y = casos)) +
+  geom_line(aes(group = pais, color = pais))
+
+
+##### Paquete tidyr #####
+### gather(unir) y spread(dispersar)
+
+### gather() es para unir columnas
+
+tidy4a <- tabla4a %>%
+  gather("1999","2000", key = "año", value = "casos")
+
+tidy4b <- tabla4b %>%
+  gather("1999", "2000",key = "año", value = "población")
+
+tabla4 <- left_join(tidy4a, tidy4b) %>%
+  arrange(pais)
+
+tabla4
+
+### Spread() permite distribuir la información en columnas 
+
+tabla2 %>%
+  spread(key = "tipo", value = "cuenta")
+
+### separate() y unit() ayudan a separar valores que en celdas y lo contrario
+
+tidy3 <- tabla3 %>%
+  separate(tasa, into = c("casos", "población"), convert = TRUE)
+
+### convert = TRUE detecta el tipo de dato y convierte a lo más adecuado
+
+
+###### ¿Qué pasa con los NA en la limpieza de tablas? ###### 
+### Dos tipos de valores faltantes: explícitos (NA), implícitos.
+
+acciones <- tibble(
+  año = c(2015,2015,2015,2015,2016,2016,2016),
+  trimestre = c(1,2,3,4,2,3,4),
+  retorno = c(1.88, 0.59, 0.35, NA, 0.92, 0.17, 2.66)
+)
+
+### Para detectar los implícitos podemos hacer uso de la función spread
+
+acciones %>%
+  spread(key = año, value = retorno)
+
+View(acciones)
+
+### Complete() sirve para complementar valores faltantes implícitos.
+
+library(tidyverse)
+
+acciones %>%
+  complete(año, trimestre)
+
+### Ejemplo de llenado de valores NA
+
+tratamiento <- tibble("sujeto" = c("Ernesto", NA, NA, "Luis", NA, NA, NA, "Lucrecia"),
+                          "tratamiento" = c(1, 2, 3, 1, 3, NA, 3, 1),
+                       "respuesta" = c(7, 10, 9, 4, NA, 8, 8, 8))
+
+tratamiento %>%
+  fill(sujeto, .direction = "up") ### Dirección señala hacia donde rellena los valores.
+
+################# Problema real de sanidad
+
+View(
+tidyr::who)
+
+library(datos)
+View(datos::oms)
+
+View(who1) <- as_tibble(who) %>%
+  gather(new_sp_m014:newrel_f65, key = "key", value = "cases", na.rm = T)
+
+who2 <- who1 %>%
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
+  
+table(who2$key)
+
+who3 <- who2 %>%
+  separate(key, c("nuevos", "tipo", "sexo_edad"), sep = "_") 
+
+who4 <- who3 %>%
+  select(-c(iso2, iso3, nuevos))
+
+who5 <- who4 %>%
+  separate(sexo_edad, c("sexo", "edad"), sep = 1)
+
+who6 <- who5 %>%
+  filter(country == "Mexico") %>%
+  group_by(year, sexo) %>%
+  select(-tipo, -edad) %>%
+  summarise(total = sum(cases))
+
+View(who6)
+
+ggplot(data = who6) + 
+  geom_bar(mapping = aes( x = year , y = total, fill = edad), position = "stack", stat = "identity") 
+# Identity: Permite elegir el eje y. Sino, hace conteo.
+
+
+(who7 <- who6 %>%
+  spread(sexo, c("hombres", "mujeres"), value = "total") %>%
+  mutate(ratio = as.numeric(f) / as.numeric(m)))
+
+### ratio 2001 = 0.624f = m ~ (2/3)f = m ~ 2f = 3m.
+
+######### Tablas relacionales <- unir dataframes
+
+library(nycflights13)
+
+flights2 <- flights %>%
+  select(year:day, hour, origin, dest, tailnum, carrier)
+
+flights3 <- merge(flights2, airlines, by = "carrier")
+
+flights2 %>%
+  inner_join(airlines, by = "carrier")
+
+library(tidyverse)
+
+#### Claves, identificadores (ID), llaves.
+## Manera de identificar un registro (renglón) dentro de una tabla.
+## Hallar una clave para flights.
+
+head(flights)
+
+# Creando ID's. Receta:
+
+flights %>%
+  count(year, month, day, hour, tailnum, origin, dest, sched_dep_time, carrier) %>%
+  filter(n > 1)
+
+### ### ### Uniones de transformación: existen 4 tipos. ### ### ### 
+# inner_join(). Evita la información que no tiene. 
+ 
+y <- tribble(
+  ~ID, ~val_y, ~val_z,
+     2,"y2","z2",
+     1, "y1","z1",
+    4, "y4", "z4"
+)
+
+x <- tribble(
+  +   ~ID, ~val_x,
+  +   1,"x1" ,
+  +   2, "x2",
+  +   3, "x3")
+
+x %>%
+  inner_join(y, by = "ID")
+
+# left_join(). No pierde información, la muestra aunque no la tenga. Se le da prioridad a X.
+# Lleva la información de y a x.
+
+x %>%
+  left_join(y, by = "ID")
+
+# right_join(). No pierde información, la muestra aunque no la tenga. 
+# Pero es al revés. La información de x llévala a y.
+
+x %>%
+  right_join(y, by = "ID")
+
+vuelos2 <- vuelos %>%
+  select(year:day, hour, origin, dest, tailnum, carrier)
+
+vuelos2 %>%
+  left_join(airlines, by = "carrier")
+
+### full_join(). Encima ambas tablas mostrando incluso la información que no tiene.
+
+x %>%
+  full_join(y, by = "ID")
+
+## Subtabla flights, número de matrículas NA contados por aerolínea.
+
+a <- flights %>%
+  filter(is.na(tailnum)) %>%
+  count(carrier)
+
+airports %>%
+  count(faa) %>%
+  filter(n > 1)
+(
+vuelos <- flights %>%
+  filter(tailnum != "NA"))
+
+vuelos %>%
+  count(year, month, day, hour, tailnum, origin, dest, sched_dep_time) %>%
+  filter(n > 1)
+
+vuelos$ID <- paste(vuelos$year, vuelos$month, vuelos$day, vuelos$hour, vuelos$tailnum, vuelos$origin, vuelos$dest, vuelos$sched_dep_time, sep = "_")
+
+### ### ### FAMILIAS DE OPERACIONES ENTRE TABLAS RELACIONALES:
+### Uniones de transformaciones, uniones de filtro y operaciones de conjunto
+
+library(tidyverse)
+
+### Claves repetidas 
+
+
+x <- tribble(
+  +   ~ID, ~val_x,
+  +   1,     "x1",
+  +   2,     "x2",
+  +   3,     "x3",
+  +   1,     "x4")
+
+y <- tribble(
+  ~ID, ~val_y, ~val_z, ~val_t,
+  2,"y2","z2", "t2",
+  1, "y1","z1", "t1",
+  4, "y4", "z4", "t4"
+)
+
+x %>%
+  inner_join(y, by = "ID")
+
+
+### ### ### Definiendo las columnas clave ### ### ### 
+
+names(flights)
+
+vuelos2 <- flights %>%
+  select(year:day, carrier, tailnum, origin, dest)
+
+vuelos2 %>%
+  left_join(weather)
+
+vuelos2 %>%
+  left_join(planes, by = "tailnum")
+
+aviones <- planes
+
+names(aviones)[1] <- "num_cola"
+
+vuelos2 %>%
+  left_join(aviones)
+
+### ### Cuando los identificadores no se llaman igual ### ###
+
+vuelos2 %>%
+  left_join(aviones, by = c("tailnum" = "num_cola"))
+
+### ### Join con R básico y SQL ### ###
+ 
+#####  dplyr              merge
+#  inner_ join(x,y)  merge(x,y)
+#  left_join(x,y)    merge(x,y,all.x=TRUE)
+#  right_join(x,y)   merge(x,y,all.y=TRUE)
+#  full_join(x,y)    merge(x,y,all.x=TRUE,all.y=TRUE)
+
+#####  dplyr                                            SQL
+#  inner_ join(x,y,by="z")            SELECT * FROM X INNER JOIN Y USING (Z)
+#  left_join(x,y,by="z")              SELECT * FROM X LEFT OUTER JOIN Y USING (Z)
+#  right_join(x,y,by="z")             SELECT * FROM X RIGHT OUTER JOIN Y USING (Z)
+#  full_join(x,y,by="z")              SELECT * FROM X FULL OUTER JOIN Y USING (Z)
+
+### ### Uniones de filtros ### ###
+
+### semi_join(x, y) <- Mantiene todos los renglones en X con coincidencias en y
+
+### anti_join(x, y) <- Descarta todos los renglones en X con coincidencias en y
+
+destinos_populares <- vuelos3 %>%
+  count(name, sort = T) %>%
+  head(10)
+ 
+vuelos3 <- flights %>%
+  left_join(airports[c(1,2)], by = c("dest" = "faa"))
+
+vuelos3 %>%
+  filter(name %in% destinos_populares$name) %>%
+  View()
+
+### semi_join() <- no le agrega info a la tabla. Cuando hay coincidencia, mantiene los datos en una nueva tabla.
+
+vuelos3 %>%
+  semi_join(destinos_populares)
+
+vuelos3 %>%
+  anti_join(destinos_populares)
+
+avion_no_id <- flights %>%
+  anti_join(planes, by = "tailnum") %>%
+  count(tailnum, sort = T)
+
+flights %>%
+  filter(tailnum %in% avion_no_id$tailnum) %>%
+  select(carrier) %>%
+  table()
+
+### Última sesión ###
+
+library(tidyverse)
+
+df <- tibble (
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+### Cálculos de variables ###
+
+colMeans(df)
+
+for (i in 1:4) {
+  print(sum(df[,i]))
+}
+
+colSums(df)
+
+### purrr ###
+
+purrr::map_dbl(df,sum) # dbl = valores numéricos.
+
+### map() crea una lista
+### map_lgl() crea un vector lógico
+### map_dbl() crea un vector numérico
+### map_int() crea un vector de números enteros
+### map_chr() crea un vector de caracteres
+
+df %>%
+  map_dbl(mean)
+
+##### MODELOS LINEALES #####
+### Proveen un resumen del conjunto de datos. Consiste en una ecuación. 
+
+## Modelo determinista <- considera condiciones ideales.
+## Modelo estocástico <- agrega aleatoriedad.
+
+library(modelr)
+
+View(sim1)
+
+ggplot(data = sim1) + 
+  geom_point(mapping = aes(x = x, y = y)) +
+  geom_abline(aes(intercept = 5, slope = 2), color = "red")
+
+### Propondremos un modelo lineal de la forma y=a0+a1*x
+
+modelos <- tibble ( 
+  a1 = runif(250, -10, 20),
+  a2 = runif(250, 0, 5))
+
+ggplot(data = sim1) + 
+  geom_point(mapping = aes(x = x, y = y)) +
+  geom_abline(aes(intercept = 5, slope = 2), color = "red") +
+  geom_abline(aes(intercept = a1, slope = a2), data = modelos, alpha = 0.25)
+
+# Slope <- pendiente, inclinación.
+# Intercept <- ordenada, en qué parte del eje y, inicia.
+
+# El objetivo es encontrar la que mejor se ajusta.
+
+# El modelo propuesto es "y = 5 + 2x"
+
+# Toda recta en el plano tiene una ecuación de la forma "y=mx+b" donde M
+# es la pendiente, es decir, la tangente del ángulo de inclinación
+# y b es la ordenada al origen, es decir, la recta pasa por el punto (0,b)
+
+
+# ¿Cómo decidir la que mejor se ajusta?
+# Si al sumar la distancia entre la recta y los puntos el resultado es el mínimo.
+
+# EUCLIDIANA <- Si al sqrt(sumar la (distancia entre la recta y los puntos)^2)
+# el resultado es el mínimo.
+
+model1 <- function(a,data) {
+# a es un vector
+# b es un dataframe
+  a[1]+a[2]*data$x
+}
+
+model1(c(7,1.5),sim1)
+
+# Multiplica la columna X del data frame por el segundo elemento del vector.
+# Después suma el resultado al primer elemento del vector. 
+
+measure_distance <- function(mod, data) {
+  diff <- data$y - model1(mod,data)
+  sqrt(mean(diff^2))
+} # Calcula el promedio de la distancia de los puntos a la recta y después su raíz cuadrada.
+
+model1(c(5,2), sim1)
+
+measure_distance(c(5,2), sim1) 
+
+sim1_dist <- function(a1,a2) {
+  measure_distance(c(a1,a2), sim1)
+}
+
+
+modelos <- modelos %>%
+  mutate(dist = purrr::map2_dbl(a1,a2,sim1_dist))
+# "dist" sería la distancia promedio de los puntos a la recta que se forma con 
+# los parámetros de a1 y a2.
+
+modelos %>%
+  arrange(dist)
+
+ggplot(data = sim1) + 
+  geom_point(mapping = aes(x = x, y = y), size = 2, color = "gray") +
+  geom_abline(aes(intercept = 6.12, slope = 1.47), color = "red") +
+  geom_abline(aes(intercept = a1, slope = a2), data = modelos, alpha = 0.25)
+
+
+ggplot(data = sim1) + 
+  geom_point(mapping = aes(x = x, y = y), size = 2, color = "gray30") +
+  geom_abline(aes(
+    intercept = a1, 
+    slope = a2, color = -dist), 
+    data = filter(grid, rank(dist) == 1))
+# rank(dist) < 2 o == 1 <- la mejor recta
+
+
+ggplot(modelos, aes(a1,a2)) + 
+  geom_point(data = filter(modelos, rank(dist) < 10), size = 4, color = "red") +
+  geom_point(aes(color = -dist)) # rank 10 - quédate con las 9 mejor rectas.
+# azul oscuro las peores
+
+
+grid <- expand.grid(
+  a1 = seq(-5, 20, length = 25),
+  a2 = seq(1, 3, length = 25)
+) %>%
+  mutate(dist = purrr::map2_dbl(a1,a2,sim1_dist))
+
+grid %>%
+  ggplot(aes(a1,a2)) +
+  geom_point(data = filter(grid, rank(dist) <= 10), size = 4, color = "red") +
+  geom_point(aes(color = -dist))
+
+best <- optim(c(0,0), measure_distance, data = sim1)
+best$par
+
+### La mejor recta es y = 4.222248 x = 2.051204
+
+ggplot(sim1, aes(x=x, y=y)) +
+  geom_point(size = 2, color = "grey30") +
+  geom_abline(intercept = best$par[1], slope = best$par[2]) 
+### lm <- linear model
+
+(sim1_mod <- lm(y~x, data = sim1)
+)
+
+grid <- sim1 %>%
+  data_grid(x)
+
+grid <- grid %>%
+  add_predictions(sim1_mod) 
+ 
+sim1 <- sim1 %>%
+  add_residuals(sim1_mod) ## distancia del punto a la recta
+
+### Fórmulas: y ~ x es lo mismo que decir y = a1 + a2 * x
+### model_matrix()
+
+### Variables categóricas
+
+dfdf <- tribble(
+  ~genero, ~respuesta,
+  "masculino", 1,
+  "femenino", 2,
+  "masculino",1
+)
+
+model_matrix(dfdf, respuesta ~ genero)
+
+sim2
+
+mod2 <- lm(y~x, data = sim2)
+
+grid <- sim2 %>%
+  data_grid(x) %>%
+  add_predictions(mod2)
+
+grid
+
+### Interacciones entre variables continuas y variables categóricas
+
+sim3
+
+ggplot(sim3, aes(x1,y)) +
+  geom_point(aes(color =x2))
+
+mod1 <- lm(y ~ x1 + x2, sim3) ### y = a0 + a1 * x1 + a2 * x2
+mo2 <- lm(y ~ x1*x2, sim3)
+
+grid <- sim3 %>%
+  data_grid(x1, x2) %>%
+  gather_predictions(mod1, mod2)
+
+### Dos variables continuas
+
+sim4
+
+table(sim4$rep)
+
+mod1 <- lm(y ~ x1 + x2, data = sim4) # y = a + b*x1 + c*x2
+mod2 <- lm(y ~ x1 * x2, data = sim4) # y = a + b*x1 *x2
+
+grid <- sim4 %>%
+  data_grid(
+    x1 = seq_range(x1,5),
+    x2 = seq_range(x2,5)
+  ) %>%
+  gather_predictions(mod1,mod2)
+
+ggplot(grid, aes(x1,x2)) +
+  geom_tile(aes(fill = pred))
+
+
